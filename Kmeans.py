@@ -102,6 +102,4 @@ def get_distance(p, q):
 		result = suma[0] ** 0.5
 	except AttributeError:
 		result = np.sum(diff) ** 0.5
-	except ValueError:
-		print("lel")
 	return result
