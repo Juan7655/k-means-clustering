@@ -29,7 +29,7 @@ class Kmeans:
 		iterations = 0
 		centroid_diff = 11
 
-		while centroid_diff > 0.1:
+		while centroid_diff != 0.0:
 			iterations += 1
 			actual_c = self.c.copy()
 			self.classify_points()
