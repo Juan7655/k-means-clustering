@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 
 def run():
 	# data for multi-dimensionality (4 features)
-	data = pd.read_csv("results4-feat.csv")
+	# data = pd.read_csv("results4-feat.csv")
 	# dataset with 2 features for testing graph and visualizations
-	# data = pd.read_csv("results.csv")
+	data = pd.read_csv("results_short.csv")
 
-	while True:
-		plot_distances(data, max_val=5)
-	# model = Kmeans.Kmeans(4, data)
-	# model.train(show_graph=True)
+	# while True:
+	# 	plot_distances(data, max_val=5)
+	model = Kmeans.Kmeans(k=2, data=data)
+	model.train(show_graph=True)
 
 
 def plot_distances(data, max_val, min_val=2):

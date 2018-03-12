@@ -2,6 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime
 import pandas as pd
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
 
 
 class Kmeans:
@@ -51,8 +56,8 @@ class Kmeans:
 				temp_p = np.array([points_in_cluster[k][j] for k in points_in_cluster.columns])
 				sum_distance += get_distance(temp_p, self.c[i])
 			if show_graph:
-				plt.scatter(points_in_cluster[points_in_cluster.columns[1]],  # x values
-				            points_in_cluster[points_in_cluster.columns[2]],  # y values
+				plt.scatter(points_in_cluster[points_in_cluster.columns[0]],  # x values
+				            points_in_cluster[points_in_cluster.columns[1]],  # y values
 				            zorder=1, s=5)
 		if show_graph:
 			plt.scatter(self.c.T[0], self.c.T[1], s=20, zorder=2, c='r')
@@ -61,6 +66,7 @@ class Kmeans:
 			plt.show()
 		return sum_distance
 
+	# for each cluster, defines its new centroid's coordinates, calculating mean-point of classified points
 	def define_centroids(self):
 		if self.c is None:
 			self.c = np.random.rand(self.k, self.features)
@@ -77,9 +83,12 @@ class Kmeans:
 			means = points_in_cluster.mean(axis=0)
 			self.c[i] = np.nan_to_num(means)
 
+	# Creates a list to relate each point's index with the actual classification
 	def classify_points(self):
 		self.map_list = []
-		for i in range(len(self.data)):
+		n = len(self.data)
+
+		for i in range(n * rank / size, n * (rank + 1) / size):
 			centroid, distance = 0, get_distance(self.data.iloc[[i]], self.c[0])
 			for j in range(1, len(self.c)):
 				temp_dist = get_distance(self.data.iloc[[i]], self.c[j])
@@ -87,6 +96,7 @@ class Kmeans:
 					centroid, distance = j, temp_dist
 			self.map_list.append([i, centroid])
 
+	# Calculates the distance moved by the centroids from one iteration to another
 	def centroid_diff(self, c):
 		distance = 0
 		for i in range(len(c)):
@@ -94,12 +104,12 @@ class Kmeans:
 		return distance
 
 
-def get_distance(p, q):
-	diff = np.square(p - q).T
+def get_distance(p, q, n=8):
+	diff = (np.abs(p - q)**n).T
 	try:
 		diff.columns = [0]
 		suma = np.sum(diff)
-		result = suma[0] ** 0.5
+		result = suma[0] ** (1/n)
 	except AttributeError:
-		result = np.sum(diff) ** 0.5
+		result = np.sum(diff) ** (1/n)
 	return result
